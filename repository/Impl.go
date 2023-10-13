@@ -10,6 +10,7 @@ import (
 type RepoImpl struct {
 }
 
+// repository layer
 func NewRepository() Repository {
 	return &RepoImpl{}
 }
