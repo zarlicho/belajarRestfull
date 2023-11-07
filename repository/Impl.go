@@ -2,9 +2,11 @@ package repository
 
 import (
 	"api/model/domain"
+	scurity "api/security"
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 )
 
 type RepoImpl struct {
@@ -79,4 +81,45 @@ func (repository *RepoImpl) FindAll(ctx context.Context, tx *sql.Tx) []domain.Da
 		categories = append(categories, datalist)
 	}
 	return categories
+}
+
+func (repository *RepoImpl) Register(ctx context.Context, tx *sql.Tx, RegCategory domain.Register) {
+	sql := "insert into register(nama, passwords) values (?, ?)"
+	encrypt, err := scurity.PassEncrypt(RegCategory)
+	if err != nil {
+		panic("error from hashing")
+	}
+	result, err := tx.ExecContext(ctx, sql, RegCategory.Name, encrypt)
+	if err != nil {
+		panic(err)
+	}
+	id, err := result.LastInsertId()
+	if err != nil {
+		panic(err)
+	}
+	RegCategory.Id = int(id)
+}
+
+func (repository *RepoImpl) Login(ctx context.Context, tx *sql.Tx, login domain.Login) (string, error) {
+	sql := "SELECT nama, passwords FROM register WHERE nama = ?"
+	rows, err := tx.QueryContext(ctx, sql, login.Name)
+	if err != nil {
+		panic(err)
+	}
+	defer rows.Close()
+	loglist := domain.Login{}
+	if rows.Next() {
+		err := rows.Scan(&loglist.Name, &loglist.Password)
+		if err != nil {
+			panic(err)
+		}
+		token, eror := scurity.ClaimsJwt(loglist, login.Password)
+		if eror != nil {
+			panic("error jwt")
+		}
+		fmt.Println(token)
+		return token, nil
+	} else {
+		return "", errors.New("data not found")
+	}
 }

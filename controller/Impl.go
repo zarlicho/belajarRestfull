@@ -5,9 +5,13 @@ import (
 	"api/model/web"
 	"api/service"
 	"encoding/json"
-	"github.com/julienschmidt/httprouter"
+	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
+	"time"
+
+	"github.com/julienschmidt/httprouter"
 )
 
 type ControllerImpl struct {
@@ -105,4 +109,60 @@ func (Controller *ControllerImpl) FindAll(writer http.ResponseWriter, request *h
 	encoder := json.NewEncoder(writer)
 	err := encoder.Encode(webResponse)
 	helper.PanicErrorIf(err)
+}
+
+func (Controller *ControllerImpl) Register(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
+	//receiving body data atau json
+	decoder := json.NewDecoder(request.Body)
+	RegisRequest := web.RegisRequest{}
+	err := decoder.Decode(&RegisRequest)
+	helper.PanicErrorIf(err)
+
+	Controller.Service.Register(request.Context(), RegisRequest)
+	//write response
+	webResponse := web.ResponseWeb{
+		Code:   200,
+		Status: "ok",
+	}
+	writer.Header().Add("Content-Type", "application/json")
+	encoder := json.NewEncoder(writer)
+	err = encoder.Encode(webResponse)
+	helper.PanicErrorIf(err)
+
+}
+func (Controller *ControllerImpl) Login(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
+	//receiving body data atau json
+	decoder := json.NewDecoder(request.Body)
+	LoginRequest := web.LoginRequest{}
+	err := decoder.Decode(&LoginRequest)
+	helper.PanicErrorIf(err)
+	fmt.Println(LoginRequest)
+	token, errs := Controller.Service.Login(request.Context(), LoginRequest)
+	if errs != nil {
+		errors.New("error at controller pattern")
+	}
+	// Membuat cookie token
+	cookie := &http.Cookie{
+		Name:     "Authorization",
+		Value:    token,                               // Token JWT yang diterima dari Service
+		Expires:  time.Now().Add(30 * 24 * time.Hour), // Atur durasi cookie sesuai kebutuhan
+		Path:     "/",
+		HttpOnly: true,
+		SameSite: http.SameSiteLaxMode, // Atur SameSite sesuai kebutuhan
+		Secure:   true,                 // Hanya diaktifkan saat menggunakan HTTPS
+	}
+
+	// Menambahkan cookie ke respons
+	http.SetCookie(writer, cookie)
+	//write response
+	webResponse := web.ResponseWeb{
+		Code:   200,
+		Status: "ok",
+		Data:   nil,
+	}
+	writer.Header().Add("Content-Type", "application/json")
+	encoder := json.NewEncoder(writer)
+	err = encoder.Encode(webResponse)
+	helper.PanicErrorIf(err)
+
 }

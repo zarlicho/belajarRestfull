@@ -5,3 +5,7 @@ type Response struct {
 	Name  string
 	Kelas string
 }
+
+type LogResponse struct {
+	Name string
+}

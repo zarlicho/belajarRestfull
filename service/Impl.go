@@ -7,6 +7,8 @@ import (
 	"api/repository"
 	"context"
 	"database/sql"
+	"errors"
+
 	"github.com/go-playground/validator/v10"
 )
 
@@ -92,4 +94,39 @@ func (Service *ServiceImpl) FindAll(ctx context.Context) []web.Response {
 		responseCategory = append(responseCategory, helper.CategoryToResponse(categories))
 	}
 	return responseCategory
+}
+
+func (Service *ServiceImpl) Register(ctx context.Context, request web.RegisRequest) {
+	err := Service.Validate.Struct(request)
+	helper.PanicErrorIf(err)
+	tx, err := Service.Db.Begin() //open database
+	if err != nil {
+		panic(err)
+	}
+	defer helper.TxErrHandle(tx)
+	category := domain.Register{
+		Name:     request.Name,
+		Password: request.Password,
+	}
+
+	Service.Repository.Register(ctx, tx, category)
+}
+
+func (Service *ServiceImpl) Login(ctx context.Context, request web.LoginRequest) (string, error) {
+	err := Service.Validate.Struct(request)
+	helper.PanicErrorIf(err)
+	tx, err := Service.Db.Begin()
+	if err != nil {
+		panic(err)
+	}
+	defer helper.TxErrHandle(tx)
+	category := domain.Login{
+		Name:     request.Name,
+		Password: request.Password,
+	}
+	token, errs := Service.Repository.Login(ctx, tx, category)
+	if errs != nil {
+		return "", errors.New("error at service pattern")
+	}
+	return token, nil
 }

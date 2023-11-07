@@ -1,8 +1,9 @@
 package controller
 
 import (
-	"github.com/julienschmidt/httprouter"
 	"net/http"
+
+	"github.com/julienschmidt/httprouter"
 )
 
 type Controller interface {
@@ -11,4 +12,7 @@ type Controller interface {
 	Delete(writer http.ResponseWriter, request *http.Request, paramas httprouter.Params)
 	FindByid(writer http.ResponseWriter, request *http.Request, paramas httprouter.Params)
 	FindAll(writer http.ResponseWriter, request *http.Request, paramas httprouter.Params)
+
+	Register(writer http.ResponseWriter, request *http.Request, params httprouter.Params)
+	Login(writer http.ResponseWriter, request *http.Request, params httprouter.Params)
 }

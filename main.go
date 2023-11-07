@@ -27,6 +27,7 @@ func main() {
 	router.DELETE("/api/categories/delete/:id", categoryController.Delete)
 	router.POST("/api/categories/create", categoryController.Create)
 	router.PUT("/api/categories/update/:id", categoryController.Update)
+	router.POST("/api/categories/regis", categoryController.Register)
 
 	server := http.Server{
 		Addr:    "localhost:3000",

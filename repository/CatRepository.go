@@ -12,4 +12,7 @@ type Repository interface {
 	Delete(ctx context.Context, tx *sql.Tx, category domain.Datasiswa)
 	FindByid(ctx context.Context, tx *sql.Tx, categoryId int) (domain.Datasiswa, error)
 	FindAll(ctx context.Context, tx *sql.Tx) []domain.Datasiswa
+
+	Register(ctx context.Context, tx *sql.Tx, userCategory domain.Register)
+	Login(ctx context.Context, tx *sql.Tx, loginCategory domain.Login) (string, error)
 }

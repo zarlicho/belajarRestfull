@@ -11,4 +11,7 @@ type Service interface {
 	Delete(ctx context.Context, datalistId int)
 	FindByid(ctx context.Context, datalistId int) web.Response
 	FindAll(ctx context.Context) []web.Response
+
+	Register(ctx context.Context, requests web.RegisRequest)
+	Login(ctx context.Context, requests web.LoginRequest) (string, error)
 }
