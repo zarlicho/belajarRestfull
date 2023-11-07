@@ -28,6 +28,7 @@ func main() {
 	router.POST("/api/categories/create", categoryController.Create)
 	router.PUT("/api/categories/update/:id", categoryController.Update)
 	router.POST("/api/categories/regis", categoryController.Register)
+	router.POST("/api/categories/login", categoryController.Login)
 
 	server := http.Server{
 		Addr:    "localhost:3000",
